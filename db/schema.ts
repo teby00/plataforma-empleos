@@ -6,6 +6,8 @@ import {
   boolean,
   index,
   pgEnum,
+  numeric,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 export const rol = pgEnum("role", ["user", "admin", "superadmin"]);
 
@@ -13,7 +15,7 @@ export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  description: text("description").notNull(),
+  description: text("description"),
   role: rol("role").default("user").notNull(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
@@ -25,7 +27,7 @@ export const user = pgTable("user", {
 });
 export const employements = pgTable("employements", {
   id: text("id").primaryKey(),
-  userId: text("user_id")
+  postedBy: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   company: text("company").notNull(),
@@ -33,13 +35,35 @@ export const employements = pgTable("employements", {
   active: boolean("active").default(true).notNull(),
   position: text("position").notNull(),
   description: text("description").notNull(),
-  salary: text("salary"),
+  salary: numeric("salary"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-
+export const aplications = pgTable(
+  "aplications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    employementId: text("employement_id")
+      .notNull()
+      .references(() => employements.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_employement_unique").on(
+      table.userId,
+      table.employementId,
+    ),
+  ],
+);
 //Tablas de Better Auth
 export const session = pgTable(
   "session",
@@ -103,6 +127,7 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  employements: many(employements),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
