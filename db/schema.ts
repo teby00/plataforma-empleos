@@ -10,7 +10,11 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 export const rol = pgEnum("role", ["user", "admin", "superadmin"]);
-
+export const applicationState = pgEnum("application_state", [
+  "pending",
+  "published",
+  "rejected",
+]);
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -41,8 +45,8 @@ export const employements = pgTable("employements", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
-export const aplications = pgTable(
-  "aplications",
+export const applications = pgTable(
+  "applications",
   {
     id: text("id").primaryKey(),
     userId: text("user_id")
@@ -141,5 +145,27 @@ export const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
     references: [user.id],
+  }),
+}));
+
+export const employementRelations = relations(
+  employements,
+  ({ one, many }) => ({
+    user: one(user, {
+      fields: [employements.postedBy],
+      references: [user.id],
+    }),
+    applications: many(applications),
+  }),
+);
+
+export const applicationRelations = relations(applications, ({ one }) => ({
+  user: one(user, {
+    fields: [applications.userId],
+    references: [user.id],
+  }),
+  employement: one(employements, {
+    fields: [applications.employementId],
+    references: [employements.id],
   }),
 }));

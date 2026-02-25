@@ -8,6 +8,13 @@
       "when": 1771900182414,
       "tag": "0000_wakeful_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771991456096,
+      "tag": "0001_aromatic_bastion",
+      "breakpoints": true
     }
   ]
 }
