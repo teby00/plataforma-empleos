@@ -6,14 +6,17 @@ import {
   boolean,
   index,
   pgEnum,
+  varchar,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+
 export const rol = pgEnum("role", ["user", "admin", "superadmin"]);
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  description: text("description").notNull(),
+  description: varchar("description", { length: 255 }),
   role: rol("role").default("user").notNull(),
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
@@ -23,6 +26,7 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
 export const employements = pgTable("employements", {
   id: text("id").primaryKey(),
   userId: text("user_id")
@@ -39,6 +43,36 @@ export const employements = pgTable("employements", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const applicationState = pgEnum("application_state", [
+  "pending",
+  "published",
+  "rejected",
+]);
+
+export const applications = pgTable(
+  "applications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    employementId: text("employement_id")
+      .notNull()
+      .references(() => employements.id, { onDelete: "cascade" }),
+    state: applicationState("state").default("pending").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_employement_unique").on(
+      table.userId,
+      table.employementId,
+    ),
+  ],
+);
 
 //Tablas de Better Auth
 export const session = pgTable(
