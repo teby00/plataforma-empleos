@@ -45,6 +45,8 @@ export const employements = pgTable("employements", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+// faltó poner el state que creaste
 export const applications = pgTable(
   "applications",
   {
@@ -148,6 +150,9 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+
+
+// Estos no son necesarios porque ya los declarastes en la tabla
 export const employementRelations = relations(
   employements,
   ({ one, many }) => ({
