@@ -2,6 +2,7 @@
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import AvatarInput from "@/components/ui/avatar-input";
 import { descriptionSchema } from "@/app/register/complete-profile/schema";
 import { Button } from "@/components/ui/button";
 import {
@@ -64,6 +65,13 @@ export function CompleteProfileForm({
           onSubmit={form.handleSubmit(onSubmit)}
           {...props}
         >
+          <AvatarInput
+            onChange={(file) => {
+              console.log("Archivo seleccionado:", file);
+              form.setValue("image", file);
+            }}
+            size={120}
+          />
           <FieldGroup>
             <div className="flex flex-col items-center gap-1 text-center">
               <h1 className="text-2xl font-bold">Agrega una descripción</h1>
