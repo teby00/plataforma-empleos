@@ -1,10 +1,10 @@
 "use server";
 import { db } from "@/db";
-import { userSchema } from "./schema";
-import { email, z } from "zod";
+import { userSchema } from "@/app/dashboard/users/schema";
+import { z } from "zod";
 import { user } from "@/db/schema";
 import { ilike, or } from "drizzle-orm";
-type User = z.infer<typeof userSchema>;
+export type User = z.infer<typeof userSchema>;
 
 export async function getUsers(name?: string): Promise<User[]> {
   if (!name) {

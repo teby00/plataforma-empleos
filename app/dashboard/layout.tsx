@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-
+import Sidebar from "@/components/sidebar";
 export const metadata: Metadata = {
   title: "Turempleo | Panel de Administración",
 };
@@ -17,5 +17,10 @@ export default async function DashboardLayout(
   if (!session) {
     notFound();
   }
-  return <main className="min-h-screen">{props.children}</main>;
+  return (
+    <div>
+      <Sidebar />
+      <main className="ml-64 min-h-screen p-6">{props.children}</main>
+    </div>
+  );
 }

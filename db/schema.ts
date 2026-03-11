@@ -8,6 +8,7 @@ import {
   pgEnum,
   varchar,
   uniqueIndex,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 export const rol = pgEnum("role", ["user", "admin", "superadmin"]);
@@ -37,7 +38,7 @@ export const employements = pgTable("employements", {
   active: boolean("active").default(true).notNull(),
   position: text("position").notNull(),
   description: text("description").notNull(),
-  salary: text("salary"),
+  salary: numeric("salary"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .$onUpdate(() => /* @__PURE__ */ new Date())
