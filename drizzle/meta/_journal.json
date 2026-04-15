@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1771795165509,
-      "tag": "0000_soft_lorna_dane",
+      "when": 1776125077045,
+      "tag": "0000_loving_nehzno",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1772255604184,
-      "tag": "0001_bitter_lilandra",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1772263949868,
-      "tag": "0002_mysterious_misty_knight",
+      "when": 1776213893520,
+      "tag": "0001_silky_lucky_pierre",
       "breakpoints": true
     }
   ]

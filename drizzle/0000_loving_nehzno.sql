@@ -1,4 +1,7 @@
+CREATE TYPE "public"."application_state" AS ENUM('pending', 'published', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('user', 'admin', 'superadmin');--> statement-breakpoint
+CREATE TYPE "public"."salary_frequency" AS ENUM('hourly', 'weekly', 'monthly', 'yearly');--> statement-breakpoint
+CREATE TYPE "public"."salary_type" AS ENUM('fixed', 'range');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -15,6 +18,15 @@ CREATE TABLE "account" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "applications" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"employement_id" text NOT NULL,
+	"state" "application_state" DEFAULT 'pending' NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "employements" (
 	"id" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
@@ -22,10 +34,31 @@ CREATE TABLE "employements" (
 	"remote" boolean DEFAULT false NOT NULL,
 	"active" boolean DEFAULT true NOT NULL,
 	"position" text NOT NULL,
-	"description" text NOT NULL,
-	"salary" text,
+	"responsabilities" text NOT NULL,
+	"requirements" varchar(500) NOT NULL,
+	"salary" numeric,
+	"salaryType" "salary_type" NOT NULL,
+	"salaryFrequency" "salary_frequency" NOT NULL,
+	"salary_from" numeric,
+	"salary_to" numeric,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp NOT NULL
+	"updated_at" timestamp NOT NULL,
+	CONSTRAINT "salary_type_check" CHECK (
+        (
+          "employements"."salaryType" = 'fixed'
+          AND "employements"."salary" IS NOT NULL
+          AND "employements"."salary_from" IS NULL
+          AND "employements"."salary_to" IS NULL
+        )
+        OR
+        (
+          "employements"."salaryType" = 'range'
+          AND "employements"."salary" IS NULL
+          AND "employements"."salary_from" IS NOT NULL
+          AND "employements"."salary_to" IS NOT NULL
+        )
+      ),
+	CONSTRAINT "salary_range_valid" CHECK ("employements"."salary_from" <= "employements"."salary_to")
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
@@ -44,7 +77,7 @@ CREATE TABLE "user" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
-	"description" text NOT NULL,
+	"description" varchar(255),
 	"role" "role" DEFAULT 'user' NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
 	"image" text,
@@ -63,8 +96,11 @@ CREATE TABLE "verification" (
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "applications" ADD CONSTRAINT "applications_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "applications" ADD CONSTRAINT "applications_employement_id_employements_id_fk" FOREIGN KEY ("employement_id") REFERENCES "public"."employements"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "employements" ADD CONSTRAINT "employements_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "user_employement_unique" ON "applications" USING btree ("user_id","employement_id");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "verification_identifier_idx" ON "verification" USING btree ("identifier");

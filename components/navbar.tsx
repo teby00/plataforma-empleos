@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import Image from "next/image";
 
 const navigationLinks = [
   { href: "#", label: "Home" },
@@ -29,19 +30,19 @@ export async function Navbar() {
   });
 
   return (
-    <header className="border-b px-4 md:px-6">
-      <div className="flex h-16 items-center justify-between gap-4">
+    <header className="px-4 md:px-6">
+      <div className="flex h-16 items-center justify-between gap-4 max-w-7xl mx-auto">
         {/* Left side */}
         <div className="flex items-center gap-2">
-          <Popover>
+          {/*  <Popover>
             <PopoverTrigger
-            /* render={
+              render={
                 <Button
                   className="group size-8 md:hidden"
                   size="icon"
                   variant="ghost"
                 />
-              } */
+              }
             >
               <svg
                 className="pointer-events-none"
@@ -82,11 +83,11 @@ export async function Navbar() {
                 </NavigationMenuList>
               </NavigationMenu>
             </PopoverContent>
-          </Popover>
+          </Popover> */}
           <div className="flex items-center gap-6">
-            <a className="text-primary hover:text-primary/90" href="#">
-              <Logo />
-            </a>
+            <Link href="/">
+              <Image src="/logo.webp" alt="Logo" width={40} height={40} />
+            </Link>
             <NavigationMenu className="max-md:hidden">
               <NavigationMenuList className="gap-2">
                 {navigationLinks.map((link, index) => (

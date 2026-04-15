@@ -1,5 +1,5 @@
 {
-  "id": "722d0fe6-3481-4e13-83e8-aac6a72574f7",
+  "id": "6a49bc6a-262f-4c84-9ef2-473b596a7500",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -126,6 +126,107 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.applications": {
+      "name": "applications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "employement_id": {
+          "name": "employement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "state": {
+          "name": "state",
+          "type": "application_state",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "user_employement_unique": {
+          "name": "user_employement_unique",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "employement_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "applications_user_id_user_id_fk": {
+          "name": "applications_user_id_user_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "applications_employement_id_employements_id_fk": {
+          "name": "applications_employement_id_employements_id_fk",
+          "tableFrom": "applications",
+          "tableTo": "employements",
+          "columnsFrom": [
+            "employement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.employements": {
       "name": "employements",
       "schema": "",
@@ -168,15 +269,47 @@
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
+        "responsabilities": {
+          "name": "responsabilities",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requirements": {
+          "name": "requirements",
+          "type": "varchar(500)",
           "primaryKey": false,
           "notNull": true
         },
         "salary": {
           "name": "salary",
-          "type": "text",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salaryType": {
+          "name": "salaryType",
+          "type": "salary_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "salaryFrequency": {
+          "name": "salaryFrequency",
+          "type": "salary_frequency",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "salary_from": {
+          "name": "salary_from",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "salary_to": {
+          "name": "salary_to",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false
         },
@@ -213,7 +346,16 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "salary_type_check": {
+          "name": "salary_type_check",
+          "value": "\n        (\n          \"employements\".\"salaryType\" = 'fixed'\n          AND \"employements\".\"salary\" IS NOT NULL\n          AND \"employements\".\"salary_from\" IS NULL\n          AND \"employements\".\"salary_to\" IS NULL\n        )\n        OR\n        (\n          \"employements\".\"salaryType\" = 'range'\n          AND \"employements\".\"salary\" IS NULL\n          AND \"employements\".\"salary_from\" IS NOT NULL\n          AND \"employements\".\"salary_to\" IS NOT NULL\n        )\n      "
+        },
+        "salary_range_valid": {
+          "name": "salary_range_valid",
+          "value": "\"employements\".\"salary_from\" <= \"employements\".\"salary_to\""
+        }
+      },
       "isRLSEnabled": false
     },
     "public.session": {
@@ -340,9 +482,9 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "role": {
           "name": "role",
@@ -465,6 +607,15 @@
     }
   },
   "enums": {
+    "public.application_state": {
+      "name": "application_state",
+      "schema": "public",
+      "values": [
+        "pending",
+        "published",
+        "rejected"
+      ]
+    },
     "public.role": {
       "name": "role",
       "schema": "public",
@@ -472,6 +623,24 @@
         "user",
         "admin",
         "superadmin"
+      ]
+    },
+    "public.salary_frequency": {
+      "name": "salary_frequency",
+      "schema": "public",
+      "values": [
+        "hourly",
+        "weekly",
+        "monthly",
+        "yearly"
+      ]
+    },
+    "public.salary_type": {
+      "name": "salary_type",
+      "schema": "public",
+      "values": [
+        "fixed",
+        "range"
       ]
     }
   },

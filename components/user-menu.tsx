@@ -11,8 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
-import { BorderLeftIcon, LogoutIcon } from "@hugeicons/core-free-icons";
+import { DashboardBrowsingIcon, LogoutIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function UserMenu({
@@ -35,7 +36,7 @@ export default function UserMenu({
           <AvatarFallback>KK</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="max-w-64">
+      <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex min-w-0 flex-col">
             <span className="truncate font-medium text-foreground text-sm">
@@ -46,15 +47,17 @@ export default function UserMenu({
             </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <HugeiconsIcon
-              icon={BorderLeftIcon}
-              aria-hidden="true"
-              className="opacity-60"
-              size={16}
-            />
-            <span>Option 1</span>
-          </DropdownMenuItem>
+          <Link href="/dashboard">
+            <DropdownMenuItem className="cursor-pointer">
+              <HugeiconsIcon
+                icon={DashboardBrowsingIcon}
+                aria-hidden="true"
+                className="opacity-60"
+                size={16}
+              />
+              <span>Panel de administración</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>

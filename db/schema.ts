@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -8,6 +8,8 @@ import {
   pgEnum,
   varchar,
   uniqueIndex,
+  numeric,
+  check,
 } from "drizzle-orm/pg-core";
 
 export const rol = pgEnum("role", ["user", "admin", "superadmin"]);
@@ -27,22 +29,64 @@ export const user = pgTable("user", {
     .notNull(),
 });
 
-export const employements = pgTable("employements", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  company: text("company").notNull(),
-  remote: boolean("remote").default(false).notNull(),
-  active: boolean("active").default(true).notNull(),
-  position: text("position").notNull(),
-  description: text("description").notNull(),
-  salary: text("salary"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-});
+export const salaryFrequency = pgEnum("salary_frequency", [
+  "hourly",
+  "weekly",
+  "monthly",
+  "yearly",
+]);
+
+export const salaryType = pgEnum("salary_type", ["fixed", "range"]);
+
+export const employements = pgTable(
+  "employements",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    company: text("company").notNull(),
+    remote: boolean("remote").default(false).notNull(),
+    active: boolean("active").default(true).notNull(),
+    position: text("position").notNull(),
+    responsabilities: text("responsabilities").notNull(),
+    requirements: varchar("requirements", { length: 500 }).notNull(),
+    salary: numeric("salary", { mode: "number" }),
+    salaryType: salaryType().notNull(),
+    salaryFrequency: salaryFrequency().notNull(),
+    salaryFrom: numeric("salary_from", { mode: "number" }),
+    salaryTo: numeric("salary_to", { mode: "number" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+  },
+  (table) => [
+    check(
+      "salary_type_check",
+      sql`
+        (
+          ${table.salaryType} = 'fixed'
+          AND ${table.salary} IS NOT NULL
+          AND ${table.salaryFrom} IS NULL
+          AND ${table.salaryTo} IS NULL
+        )
+        OR
+        (
+          ${table.salaryType} = 'range'
+          AND ${table.salary} IS NULL
+          AND ${table.salaryFrom} IS NOT NULL
+          AND ${table.salaryTo} IS NOT NULL
+        )
+      `,
+    ),
+
+    check("salary_range_valid", sql`${table.salaryFrom} <= ${table.salaryTo}`),
+  ],
+);
 
 export const applicationState = pgEnum("application_state", [
   "pending",

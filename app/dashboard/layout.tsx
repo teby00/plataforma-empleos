@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Metadata } from "next";
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Turempleo | Panel de Administración",
@@ -10,12 +9,12 @@ export const metadata: Metadata = {
 export default async function DashboardLayout(
   props: LayoutProps<"/dashboard">,
 ) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    notFound();
-  }
-  return <main className="min-h-screen">{props.children}</main>;
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <main className="min-h-screen">{props.children}</main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }
